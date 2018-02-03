@@ -1,6 +1,5 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 
 using std::cout;
 using FString = std::string;
@@ -10,8 +9,7 @@ const int SCREEN_HEIGHT = 377;
 SDL_Window* gWindow;
 SDL_Surface* gScreenSurface;
 SDL_Surface* gHelloWorld;
-SDL_Surface* gKeyPressSurfaces = nullptr;
-int gSupportedImageFlags = IMG_INIT_JPG|IMG_INIT_PNG;
+SDL_Surface* gKeyPressSurfaces;
 
 enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_DEFAULT,
@@ -22,12 +20,11 @@ enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_TOTAL
 };
 
-SDL_Surface* loadSurface (FString const& filePath) {
-    SDL_Surface* loadedSurface = IMG_Load(filePath.c_str());
+SDL_Surface* loadSurface (FString filePath) {
+    SDL_Surface* loadedSurface = SDL_LoadBMP(filePath.c_str());
     if (!loadedSurface) {
-        printf("Unable to load image %s!  IMG_Load Error: %s\n",
-               filePath.c_str(), IMG_GetError()
-        );
+        printf("Unable to load image %s!  SDL_LoadBMP Error: %s\n",
+               filePath.c_str(), SDL_GetError());
     }
     return loadedSurface;
 }
@@ -49,11 +46,6 @@ bool init () {
              << SDL_GetError()
              << std::endl;
         return false;
-    }
-
-    if ((IMG_Init(gSupportedImageFlags)&gSupportedImageFlags) != gSupportedImageFlags) {
-        printf("IMG_Init: Failed to init required jpg and png support!\n");
-        printf("IMG_Init: %s\n", IMG_GetError());
     }
 
     gWindow = SDL_CreateWindow("SDL Tutorial",
@@ -103,7 +95,6 @@ int main() {
             quit = e.type == SDL_QUIT;
             SDL_BlitSurface(gHelloWorld, nullptr, gScreenSurface, nullptr);
             SDL_UpdateWindowSurface(gWindow);
-
         }
     }
 
