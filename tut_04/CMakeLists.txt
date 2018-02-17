@@ -10,3 +10,4 @@ include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(cpp_lazy_foo_sdl2_4 main.cpp)
 
 target_link_libraries(cpp_lazy_foo_sdl2_4 ${SDL2_LIBRARIES})
+
