@@ -1,15 +1,17 @@
 #include <iostream>
+#include <array>
 #include <SDL2/SDL.h>
 
 using std::cout;
 using FString = std::string;
-const int SCREEN_WIDTH = 610;
+const int SCREEN_WIDTH = 377;
 const int SCREEN_HEIGHT = 377;
 
 SDL_Window* gWindow;
 SDL_Surface* gScreenSurface;
 SDL_Surface* gHelloWorld;
-SDL_Surface* gKeyPressSurfaces;
+SDL_Surface* gKeyPressSurfaces [5];
+SDL_Surface* gCurrentSurface = nullptr;
 
 enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_DEFAULT,
@@ -20,7 +22,7 @@ enum KeyPressSurfaces {
     KEY_PRESS_SURFACE_TOTAL
 };
 
-SDL_Surface* loadSurface (FString filePath) {
+SDL_Surface* loadSurface (const FString& filePath) {
     SDL_Surface* loadedSurface = SDL_LoadBMP(filePath.c_str());
     if (!loadedSurface) {
         printf("Unable to load image %s!  SDL_LoadBMP Error: %s\n",
@@ -29,13 +31,39 @@ SDL_Surface* loadSurface (FString filePath) {
     return loadedSurface;
 }
 
-int quitTut () {
-    SDL_FreeSurface( gHelloWorld );
-    gHelloWorld = nullptr;
+void handleGameEvents (SDL_Event e) {
+    //Select surfaces based on key press
+    switch( e.key.keysym.sym ) {
+        case SDLK_UP:
+            gCurrentSurface = gKeyPressSurfaces[ KEY_PRESS_SURFACE_UP ];
+            break;
+        case SDLK_DOWN:
+            gCurrentSurface = gKeyPressSurfaces[ KEY_PRESS_SURFACE_DOWN ];
+            break;
+        case SDLK_LEFT:
+            gCurrentSurface = gKeyPressSurfaces[ KEY_PRESS_SURFACE_LEFT ];
+            break;
+        case SDLK_RIGHT:
+            gCurrentSurface = gKeyPressSurfaces[ KEY_PRESS_SURFACE_RIGHT ];
+            break;
+        default:
+            gCurrentSurface = gKeyPressSurfaces[ KEY_PRESS_SURFACE_DEFAULT ];
+            break;
+    }
+}
 
+void freeSurfaces (SDL_Surface* surfaces[]) {
+    for (int i = 0; i < sizeof(surfaces); i += 1) {
+        SDL_Surface* surface = surfaces[i];
+        SDL_FreeSurface(surface);
+        surfaces[i] = nullptr;
+    }
+}
+
+int quitTut () {
+    freeSurfaces(gKeyPressSurfaces);
     SDL_DestroyWindow( gWindow );
     gWindow = nullptr;
-
     SDL_Quit();
     return 0;
 }
@@ -72,11 +100,15 @@ bool init () {
 }
 
 bool loadMedia () {
-    gHelloWorld = loadSurface("../mandelbrot_set.bmp");
-    return gHelloWorld != nullptr;
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT] =  loadSurface("../assets/press-some-arrows.bmp");
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_UP] =       loadSurface("../assets/up-arrow.bmp");
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT] =    loadSurface("../assets/right-arrow.bmp");
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_LEFT] =     loadSurface("../assets/left-arrow.bmp");
+    gKeyPressSurfaces[KEY_PRESS_SURFACE_DOWN] =     loadSurface("../assets/down-arrow.bmp");
+    return gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT] != nullptr;
 }
 
-int main() {
+int WinMain () {
     if (!init()) {
         cout << "Failed to initialize application.";
         return quitTut();
@@ -90,10 +122,17 @@ int main() {
     bool quit = false;
     SDL_Event e; // = nullptr;
 
+    gCurrentSurface = gHelloWorld;
+
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             quit = e.type == SDL_QUIT;
-            SDL_BlitSurface(gHelloWorld, nullptr, gScreenSurface, nullptr);
+
+            // Handle key presses
+            handleGameEvents(e);
+
+            // Blit surfaces
+            SDL_BlitSurface(gCurrentSurface, nullptr, gScreenSurface, nullptr);
             SDL_UpdateWindowSurface(gWindow);
         }
     }

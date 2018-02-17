@@ -1,0 +1,5 @@
+set(CMAKE_MODULE_PATH g:/github/CMake/Modules)
+set(SDL2_LIBRARY_TEMP g:/mingw_libs/SDL2-2.0.7/x86_64-w64-mingw32/lib)
+set(SDL2_DIR g:/mingw_libs/SDL2-2.0.7)
+set(SDL2_INCLUDE_DIR SDL2_LIBRARY_TEMP)
+set(ASSETS_DIR assets)

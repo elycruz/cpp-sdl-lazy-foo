@@ -4,6 +4,8 @@ project(cpp_lazy_foo_sdl2_5)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include(Env.cmake)
+
 find_package(SDL2 REQUIRED)
 
 INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
